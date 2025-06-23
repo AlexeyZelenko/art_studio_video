@@ -18,3 +18,7 @@ html, body {
   width: 100%;
   overflow-x: hidden;
 }
+
+h2 {
+  line-height: 1.2 !important;
+}
