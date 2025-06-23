@@ -74,7 +74,7 @@ const VideoPage = () => {
                 className="grid grid-cols-3 gap-6"
               >
                 <div className="text-center">
-                  <div className="text-2xl md:text-3xl font-bold text-yellow-300 mb-1">50+</div>
+                  <div className="text-2xl md:text-3xl font-bold text-yellow-300 mb-1">5+</div>
                   <div className="text-white/80 text-sm">Відео проектів</div>
                 </div>
                 <div className="text-center">
@@ -179,20 +179,14 @@ const VideoPage = () => {
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-8">
             {[
               {
                 icon: Video,
                 title: 'Професійне обладнання',
                 description: '4K камери, стабілізатори, професійний звук',
                 gradient: 'from-blue-500 to-cyan-500'
-              },
-              {
-                icon: Users,
-                title: 'Досвідчена команда',
-                description: 'Режисери, оператори, монтажери з багаторічним досвідом',
-                gradient: 'from-green-500 to-teal-500'
-              },
+              },              
               {
                 icon: Clock,
                 title: 'Швидка доставка',
