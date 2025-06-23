@@ -19,6 +19,9 @@ const PortfolioDetail: React.FC = () => {
   const [showFullscreen, setShowFullscreen] = useState(false);
 
   useEffect(() => {
+    // Scroll to top when component mounts or ID changes
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    
     if (portfolioItems.length > 0 && id) {
       const item = portfolioItems.find(item => item.id === id);
       if (item) {

@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Video, Play, Award, Users, Clock, Star } from 'lucide-react';
 import VideoServices from './VideoServices';
 import VideoPortfolio from './VideoPortfolio';
 
 const VideoPage = () => {
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+  }, []);
+
   return (
     <div className="min-h-screen w-full overflow-x-hidden">
       {/* Hero Section */}

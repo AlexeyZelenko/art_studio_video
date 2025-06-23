@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, LogOut, Edit, Trash2, Image as ImageIcon, User, Settings, Camera, Home, Video } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -17,6 +17,16 @@ const AdminDashboard: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState<PortfolioItem | null>(null);
   const [activeTab, setActiveTab] = useState<'portfolio' | 'services' | 'video'>('portfolio');
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+  }, []);
+
+  // Scroll to top when tab changes  
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+  }, [activeTab]);
 
   const handleLogout = async () => {
     try {

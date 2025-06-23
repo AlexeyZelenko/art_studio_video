@@ -25,7 +25,7 @@ const Header = () => {
     { name: 'Контакти', href: '/#contact' }
   ];
 
-  const handleMenuClick = (href: string) => {
+    const handleMenuClick = (href: string) => {
     setIsMenuOpen(false);
     
     // Handle internal anchors
@@ -34,12 +34,20 @@ const Header = () => {
         // If not on home page, navigate to home first
         window.location.href = href;
       } else {
-        // If on home page, scroll to section
-        const elementId = href.substring(2);
-        const element = document.getElementById(elementId);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
+        // If on home page, scroll to section with small delay to allow menu to close
+        setTimeout(() => {
+          const elementId = href.substring(2);
+          const element = document.getElementById(elementId);
+          if (element) {
+            // Calculate offset for fixed header (approximately 80px)
+            const headerOffset = 80;
+            const elementPosition = element.offsetTop - headerOffset;
+            window.scrollTo({
+              top: elementPosition,
+              behavior: 'smooth'
+            });
+          }
+        }, 300); // Small delay to allow menu animation to complete
       }
     }
   };
