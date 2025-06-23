@@ -327,7 +327,11 @@ const VideoManagement: React.FC = () => {
                 >
                   <div className="aspect-video relative">
                     <img
-                      src={item.thumbnailUrl}
+                      src={
+                        item.customThumbnailUrl || 
+                        item.thumbnailUrl || 
+                        `https://img.youtube.com/vi/${item.youtubeUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^#&?]*)/)?.[1]}/maxresdefault.jpg`
+                      }
                       alt={item.title}
                       className="w-full h-full object-cover"
                     />
@@ -362,6 +366,11 @@ const VideoManagement: React.FC = () => {
                     <div className="absolute top-2 right-2 bg-gradient-to-r from-pink-500 to-violet-600 text-white text-xs px-2 py-1 rounded-full">
                       {item.category}
                     </div>
+                    {item.customThumbnailUrl && (
+                      <div className="absolute bottom-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                        Кастомна
+                      </div>
+                    )}
                   </div>
                   <div className="p-4">
                     <h3 className="font-semibold text-white mb-1 truncate">{item.title}</h3>

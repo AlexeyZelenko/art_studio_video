@@ -18,6 +18,7 @@ export interface VideoPortfolioItem {
   category: string;
   youtubeUrl: string;
   thumbnailUrl?: string;
+  customThumbnailUrl?: string;
   description?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -39,4 +40,5 @@ export interface VideoPortfolioFormData {
   category: string;
   youtubeUrl: string;
   description?: string;
+  customThumbnailUrl?: string;
 }

@@ -106,7 +106,11 @@ const VideoPortfolio = () => {
                   {/* Video Thumbnail */}
                   <div className="aspect-video relative">
                     <img
-                      src={item.thumbnailUrl || `https://img.youtube.com/vi/${extractYouTubeId(item.youtubeUrl)}/maxresdefault.jpg`}
+                      src={
+                        item.customThumbnailUrl || 
+                        item.thumbnailUrl || 
+                        `https://img.youtube.com/vi/${extractYouTubeId(item.youtubeUrl)}/maxresdefault.jpg`
+                      }
                       alt={item.title}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
@@ -127,6 +131,13 @@ const VideoPortfolio = () => {
                     <div className="absolute top-4 left-4 bg-gradient-to-r from-pink-500 to-violet-600 text-white text-sm px-3 py-1 rounded-full font-medium shadow-lg">
                       {item.category}
                     </div>
+
+                    {/* Custom Thumbnail Indicator */}
+                    {item.customThumbnailUrl && (
+                      <div className="absolute bottom-4 left-4 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium shadow-lg">
+                        Кастомна мініатюра
+                      </div>
+                    )}
 
                     {/* External Link Button */}
                     <motion.button

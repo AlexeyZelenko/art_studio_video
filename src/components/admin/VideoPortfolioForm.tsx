@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { X, ExternalLink } from 'lucide-react';
+import { X, ExternalLink, Upload, Trash2 } from 'lucide-react';
 import { useVideo } from '../../contexts/VideoContext';
 import { VideoPortfolioItem, VideoPortfolioFormData } from '../../types/video';
 
@@ -16,10 +16,15 @@ const VideoPortfolioForm: React.FC<VideoPortfolioFormProps> = ({ item, onClose, 
     title: item?.title || '',
     category: item?.category || 'Весілля',
     youtubeUrl: item?.youtubeUrl || '',
-    description: item?.description || ''
+    description: item?.description || '',
+    customThumbnailUrl: item?.customThumbnailUrl || ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(
+    item?.customThumbnailUrl || null
+  );
 
   const categories = ['Весілля', 'Корпоратив', 'Реклама', 'Музика', 'Документальне', 'Event'];
 
@@ -35,6 +40,46 @@ const VideoPortfolioForm: React.FC<VideoPortfolioFormProps> = ({ item, onClose, 
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : null;
+  };
+
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setError('Будь ласка, оберіть файл зображення');
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Розмір файлу повинен бути менше 5MB');
+        return;
+      }
+      
+      setThumbnailFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setThumbnailPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+      
+      setError('');
+    }
+  };
+
+  const handleRemoveThumbnail = () => {
+    setThumbnailFile(null);
+    setThumbnailPreview(null);
+    setFormData(prev => ({ ...prev, customThumbnailUrl: '' }));
+    
+    // Reset file input
+    const fileInput = document.getElementById('thumbnail-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,9 +105,9 @@ const VideoPortfolioForm: React.FC<VideoPortfolioFormProps> = ({ item, onClose, 
 
     try {
       if (item) {
-        await updateVideoPortfolioItem(item.id, formData);
+        await updateVideoPortfolioItem(item.id, formData, thumbnailFile || undefined);
       } else {
-        await addVideoPortfolioItem(formData);
+        await addVideoPortfolioItem(formData, thumbnailFile || undefined);
       }
       
       onSuccess();
@@ -80,7 +125,7 @@ const VideoPortfolioForm: React.FC<VideoPortfolioFormProps> = ({ item, onClose, 
   };
 
   const videoId = extractYouTubeId(formData.youtubeUrl);
-  const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : '';
+  const youtubeThumbUrl = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : '';
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-2 sm:p-4">
@@ -135,16 +180,65 @@ const VideoPortfolioForm: React.FC<VideoPortfolioFormProps> = ({ item, onClose, 
             )}
           </div>
 
-          {/* Video Preview */}
-          {thumbnailUrl && (
+          {/* Custom Thumbnail Upload */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Кастомна мініатюра (необов'язково)
+            </label>
+            <div className="space-y-4">
+              {/* File Upload */}
+              <div className="relative">
+                <input
+                  type="file"
+                  id="thumbnail-upload"
+                  accept="image/*"
+                  onChange={handleThumbnailChange}
+                  className="hidden"
+                />
+                <label
+                  htmlFor="thumbnail-upload"
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white cursor-pointer hover:bg-white/20 transition-colors flex items-center justify-center space-x-2"
+                >
+                  <Upload className="w-5 h-5" />
+                  <span>Завантажити зображення</span>
+                </label>
+              </div>
+
+              {/* Thumbnail Preview */}
+              {thumbnailPreview && (
+                <div className="relative">
+                  <div className="aspect-video rounded-xl overflow-hidden bg-gray-800">
+                    <img
+                      src={thumbnailPreview}
+                      alt="Custom thumbnail preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveThumbnail}
+                    className="absolute top-2 right-2 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white hover:bg-red-600 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                  <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                    Кастомна мініатюра
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* YouTube Video Preview */}
+          {youtubeThumbUrl && !thumbnailPreview && (
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Попередній перегляд
+                YouTube мініатюра
               </label>
               <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-800">
                 <img
-                  src={thumbnailUrl}
-                  alt="Video thumbnail"
+                  src={youtubeThumbUrl}
+                  alt="YouTube thumbnail"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
@@ -153,6 +247,9 @@ const VideoPortfolioForm: React.FC<VideoPortfolioFormProps> = ({ item, onClose, 
                       <path d="M8 5v14l11-7z"/>
                     </svg>
                   </div>
+                </div>
+                <div className="absolute top-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
+                  YouTube мініатюра
                 </div>
               </div>
             </div>

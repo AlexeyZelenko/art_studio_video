@@ -9,7 +9,8 @@ import {
   orderBy, 
   query 
 } from 'firebase/firestore';
-import { db } from '../firebase/config';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../firebase/config';
 import { VideoService, VideoPortfolioItem, VideoServiceFormData, VideoPortfolioFormData } from '../types/video';
 
 // Default video services data
@@ -128,8 +129,8 @@ interface VideoContextType {
   // Portfolio
   videoPortfolio: VideoPortfolioItem[];
   portfolioLoading: boolean;
-  addVideoPortfolioItem: (itemData: VideoPortfolioFormData) => Promise<string>;
-  updateVideoPortfolioItem: (id: string, updates: Partial<VideoPortfolioFormData>) => Promise<void>;
+  addVideoPortfolioItem: (itemData: VideoPortfolioFormData, thumbnailFile?: File) => Promise<string>;
+  updateVideoPortfolioItem: (id: string, updates: Partial<VideoPortfolioFormData>, thumbnailFile?: File) => Promise<void>;
   deleteVideoPortfolioItem: (id: string) => Promise<void>;
   
   // Common
@@ -205,6 +206,7 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           id: doc.id,
           ...data,
           thumbnailUrl: data.thumbnailUrl || getYouTubeThumbnail(data.youtubeUrl),
+          customThumbnailUrl: data.customThumbnailUrl || undefined,
           createdAt: data.createdAt?.toDate(),
           updatedAt: data.updatedAt?.toDate(),
         } as VideoPortfolioItem);
@@ -222,6 +224,7 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         ...item,
         id: `default-${index}`,
         thumbnailUrl: getYouTubeThumbnail(item.youtubeUrl),
+        customThumbnailUrl: undefined,
         createdAt: new Date(),
         updatedAt: new Date(),
       }));
@@ -323,11 +326,25 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  // Helper function to upload thumbnail
+  const uploadThumbnail = async (file: File): Promise<string> => {
+    const storageRef = ref(storage, `video-thumbnails/${Date.now()}_${file.name}`);
+    const snapshot = await uploadBytes(storageRef, file);
+    return await getDownloadURL(snapshot.ref);
+  };
+
   // Portfolio methods
-  const addVideoPortfolioItem = async (itemData: VideoPortfolioFormData): Promise<string> => {
+  const addVideoPortfolioItem = async (itemData: VideoPortfolioFormData, thumbnailFile?: File): Promise<string> => {
     try {
+      let customThumbnailUrl = itemData.customThumbnailUrl;
+      
+      if (thumbnailFile) {
+        customThumbnailUrl = await uploadThumbnail(thumbnailFile);
+      }
+      
       const newItem = {
         ...itemData,
+        customThumbnailUrl,
         thumbnailUrl: getYouTubeThumbnail(itemData.youtubeUrl),
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -349,13 +366,18 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const updateVideoPortfolioItem = async (id: string, updates: Partial<VideoPortfolioFormData>): Promise<void> => {
+  const updateVideoPortfolioItem = async (id: string, updates: Partial<VideoPortfolioFormData>, thumbnailFile?: File): Promise<void> => {
     try {
-      const updateData = {
+      let updateData = {
         ...updates,
         ...(updates.youtubeUrl && { thumbnailUrl: getYouTubeThumbnail(updates.youtubeUrl) }),
         updatedAt: new Date()
       };
+      
+      if (thumbnailFile) {
+        const customThumbnailUrl = await uploadThumbnail(thumbnailFile);
+        updateData.customThumbnailUrl = customThumbnailUrl;
+      }
       
       await updateDoc(doc(db, 'videoPortfolio', id), updateData);
       
